@@ -1,0 +1,65 @@
+namespace: todoapp
+
+image:
+  repository: ikulyk404/todoapp
+  tag: "4.0.1"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  name: secrets-reader
+
+# Every key below becomes a key of the Secret and an env variable of the container
+secrets:
+  SECRET_KEY: "@e2(yx)v&tgh3_s=0yja-i!dpebxsz^dg47x)-k&kq_3zf*9e*"
+  DB_NAME: app_db
+  DB_USER: app_user
+  DB_PASSWORD: "1234"
+  DB_HOST: mysql-0.mysql.mysql.svc.cluster.local
+
+config:
+  PYTHONUNBUFFERED: "1"
+
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 150m
+  limits:
+    memory: 256Mi
+    cpu: 150m
+
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 1
+
+replicas: 2
+
+nodeAffinity:
+  key: app
+  values:
+  - todoapp
+
+hpa:
+  minReplicas: 2
+  maxReplicas: 5
+  averageCpuUtilization: 70
+  averageMemoryUtilization: 70
+
+pv:
+  capacity: 1Gi
+  storageClassName: standard
+  hostPath: /data/
+
+pvc:
+  storage: 1Gi
+
+service:
+  port: 80
+  targetPort: 8080
+  nodePort: 30007
+
+ingress:
+  className: nginx
+
+# Values for the `mysql` sub-chart
+mysql:
+  namespace: mysql
